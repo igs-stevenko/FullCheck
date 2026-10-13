@@ -8,12 +8,15 @@
 
 ### 1. 系統名稱
 **APK 取得方式：** JNI 透過 ioctl 讀取 `/dev/system_info`  
-**ADB 驗證：** 需要 native binary，無直接 shell 指令
+**ADB 驗證：** 無法透過 ADB 直接取得
 
 ```bash
-# 目前無法透過 ADB 直接取得，需編譯 read_sysinfo_git 工具
+# 設備上沒有 read_sysinfo 工具，此項目只能透過 APK 取得
+# 若需 ADB 驗證，需先將 read_sysinfo_git 編譯並 push 到設備
 # 源碼位置：frameworks/native/services/igs/read_sysinfo_git/
 ```
+
+**注意：** 此項目無法透過 ADB shell 驗證，必須使用 APK 或編譯專用 native binary
 
 ---
 
@@ -66,13 +69,20 @@ adb shell "cat /vendor/etc/HwComposerEnv.xml | grep 'HwComposerEnv.*Enable'"
 **判斷邏輯：**
 | Enable 值 | 模式 | 顯示 |
 |-----------|------|------|
-| 0 | 同顯 | `同顯` |
-| 1 | 異顯 | `異顯 (FbWidth x FbHeight)` |
+| 0 | 同顯 | `同顯` (不顯示解析度) |
+| 1 | 異顯 | `異顯 (總解析度)` |
 
 **取得總解析度 (異顯時)：**
 ```bash
+# 異顯模式：從 HwComposerEnv.xml 取得 FbWidth x FbHeight
 adb shell "cat /vendor/etc/HwComposerEnv.xml | grep 'DsiplayMode.*FbWidth'"
+
+# 同顯模式：使用 wm size 取得實際解析度
+adb shell "wm size"
+# 輸出範例：Physical size: 1080x1920
 ```
+
+**注意：** `wm size` 的輸出是旋轉前的解析度（寬x高），需根據旋轉角度解讀
 
 ---
 
